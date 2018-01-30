@@ -1,0 +1,26 @@
+version: "3.1"
+services:
+
+    mongo:
+      image: mongo
+      container_name: ucp-mongodb
+
+    nodejs:
+      build: build/nodejs
+      container_name: ucp-nodejs
+      working_dir: /application/src/api
+      volumes:
+        - .:/application
+      ports:
+        - "3000:3000"
+
+    webserver:
+      image: nginx:alpine
+      container_name: ucp-webserver
+      working_dir: /application
+      volumes:
+          - .:/application
+          - ./build/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      ports:
+       - "8088:80"
+

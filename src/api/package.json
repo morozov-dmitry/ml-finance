@@ -1,0 +1,9 @@
+{
+  "name": "udacity-capstone-finance",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "*",
+    "yahoo-finance": "^0.3.5"
+  }
+}
