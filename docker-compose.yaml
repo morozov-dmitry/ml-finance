@@ -7,12 +7,15 @@ services:
 
     nodejs:
       build: build/nodejs
+      restart: always
       container_name: ucp-nodejs
       working_dir: /application/src/api
       volumes:
         - .:/application
       ports:
         - "3000:3000"
+      links:
+        - mongo
 
     webserver:
       image: nginx:alpine

@@ -4,7 +4,7 @@ let yahooFinance = require('yahoo-finance');
 let app = express();
 
 let MongoClient = require('mongodb').MongoClient;
-let url = "mongodb://ucp-mongodb:27017/";
+let dsn = "mongodb://mongo:27017/udacity-finance";
 
 // Stock prices symbols to download
 let symbols = ['GOOG', 'IBM', 'AAPL', 'NVDA', 'SPY']
@@ -23,48 +23,50 @@ app.get('/', function (req, res) {
 
 app.get('/load', function (req, res) {
 
-    // Current day
-    const dateTo = new Date;
-    // Previous day
-    const dateFrom = new Date(dateTo.getTime() - 24 * 60 * 60 * 1000);
+    MongoClient.connect(dsn, (err, db) => {
+        if (err) throw err;
+        const dbo = db.db("udacity-finance");
 
-    let loadHash = createSymbolsLoadHash()
+        // Current day
+        const dateTo = new Date;
+        // Previous day
+        const dateFrom = new Date(dateTo.getTime() - 24 * 60 * 60 * 1000);
 
-    const processSymbolData = (err, quotes, symbol) => {
+        let loadHash = createSymbolsLoadHash()
 
-        loadHash[symbol] = true
-        let showResponse = true
-        for(let hashSymbol in loadHash){
-            if(!loadHash[hashSymbol]){
-                showResponse = false
-                break
-            }
-        }
+        const processSymbolData = (err, quotes, symbol, db) => {
 
-        if(showResponse){
-            res.send('Data downloaded');
-        }
-
-        MongoClient.connect(url, function(err, db) {
-            if (err) throw err;
-            var dbo = db.db("udacity-finance");
             db.collection("stock_log").insertMany(quotes, function(err, res) {
                 if (err) throw err;
-                console.log("1 documents were inserted");
+                console.log(symbol + " " + quotes.length + " documents were inserted");
                 db.close();
             });
-        });
 
-    }
+            loadHash[symbol] = true
+            let showResponse = true
+            for(let hashSymbol in loadHash){
+                if(!loadHash[hashSymbol]){
+                    showResponse = false
+                    break
+                }
+            }
 
-    for(let symbol in loadHash){
-        yahooFinance.historical({
-            symbol: symbol,
-            from: dateformat(dateFrom, "yyyy-mm-dd"),
-            to: dateformat(dateTo, "yyyy-mm-dd"),
-        }, (err, quotes) => processSymbolData(err, quotes, symbol));
-    }
+            if(showResponse){
+                res.send('Data downloaded');
+            }
 
+        }
+
+        for(let symbol in loadHash){
+            yahooFinance.historical({
+                symbol: symbol,
+                from: dateformat(dateFrom, "yyyy-mm-dd"),
+                to: dateformat(dateTo, "yyyy-mm-dd"),
+            }, (err, quotes) => processSymbolData(err, quotes, symbol, db));
+        }
+
+
+    });
 
 });
 
