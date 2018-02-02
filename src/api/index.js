@@ -21,14 +21,32 @@ app.get('/', function (req, res) {
     res.send('Hello World!');
 });
 
-app.get('/load', function (req, res) {
 
-    MongoClient.connect(dsn, (err, db) => {
-        if (err) throw err;
-        const dbo = db.db("udacity-finance");
+MongoClient.connect(dsn, (err, mongoclient) => {
+
+    if (err) {
+        res.status(500).send(JSON.stringify({status: 1, message: "Can't connect to database"}))
+    }
+
+    const db = mongoclient.db("udacity-finance");
+
+    app.get('/history/:symbol', function (req, res) {
+        if (typeof(req.param('symbol')) === 'undefined' || !symbols.includes(req.param('symbol'))) {
+            res.status(400).send({
+                status: 1,
+                message: "Correct symbold must be provides (one of " + symbols.concat(', ') + ")"
+            })
+        }
+        else {
+            res.send({status: 0, data: req.param('symbol')});
+        }
+    });
+
+    app.get('/load', function (req, res) {
 
         // Current day
         const dateTo = new Date;
+
         // Previous day
         const dateFrom = new Date(dateTo.getTime() - 24 * 60 * 60 * 1000);
 
@@ -36,35 +54,33 @@ app.get('/load', function (req, res) {
 
         const processSymbolData = (err, quotes, symbol, db) => {
 
-            db.collection("stock_log").insertMany(quotes, function(err, res) {
+            db.collection("stock_log").insertMany(quotes, function (err, res) {
                 if (err) throw err;
-                console.log(symbol + " " + quotes.length + " documents were inserted");
-                db.close();
+                console.log(symbol + " " + quotes.length + " documents were inserted", res);
             });
 
             loadHash[symbol] = true
             let showResponse = true
-            for(let hashSymbol in loadHash){
-                if(!loadHash[hashSymbol]){
+            for (let hashSymbol in loadHash) {
+                if (!loadHash[hashSymbol]) {
                     showResponse = false
                     break
                 }
             }
 
-            if(showResponse){
-                res.send('Data downloaded');
+            if (showResponse) {
+                res.send({status: 0, data: 'Stock prices were downloaded'});
             }
 
         }
 
-        for(let symbol in loadHash){
+        for (let symbol in loadHash) {
             yahooFinance.historical({
                 symbol: symbol,
                 from: dateformat(dateFrom, "yyyy-mm-dd"),
                 to: dateformat(dateTo, "yyyy-mm-dd"),
             }, (err, quotes) => processSymbolData(err, quotes, symbol, db));
         }
-
 
     });
 
