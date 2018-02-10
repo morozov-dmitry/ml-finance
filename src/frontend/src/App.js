@@ -1,97 +1,42 @@
 import React, { Component } from 'react'
-import Highcharts from 'highcharts/highstock'
-import {HighchartsStockChart, Chart, withHighcharts, XAxis, YAxis, Title, AreaSplineSeries, FlagSeries, Navigator, PlotBand} from 'react-jsx-highstock'
-import { createRandomData } from './data-helpers'
+import { Route, withRouter } from 'react-router-dom'
+import { connect } from 'react-redux'
+import * as ClientAPI from './utils/APIClient'
+import * as stocksActionTypes from './store/stocks/actionTypes';
+import * as forecastsActionTypes from './store/forecasts/actionTypes';
+import StockRealTimePrices from './components/containers/StockRealTimePrices'
+import Loaders from './components/plugins/Loaders'
+import Navigation from './components/plugins/Navigation'
+import Footer from './components/plugins/Footer'
+import HomeComponent from './components/HomeComponent'
+import FAQComponent from './components/FAQComponent'
+import ContactComponent from './components/ContactComponent'
 
 class App extends Component {
-
-    constructor (props) {
-        super(props);
-
-        this.renderPlotBand = this.renderPlotBand.bind(this);
-        this.renderNavPlotBand = this.renderNavPlotBand.bind(this);
-
-        const now = Date.now();
-        const unitSales = createRandomData(now, 1e8);
-        this.state = {
-            unitSales,
-            campaigns: [
-                {
-                    from: unitSales[9][0],
-                    to: unitSales[23][0],
-                    title: 'US TV advert campaign'
-                },
-                {
-                    from: unitSales[50][0],
-                    to: unitSales[57][0],
-                    title: 'UK Radio advert campaign'
-                }
-            ],
-            notableEvents: [
-                {
-                    x: unitSales[0][0],
-                    title: 'North American Launch Date'
-                },
-                {
-                    x: unitSales[30][0],
-                    title: 'European Launch Date'
-                },
-                {
-                    x: unitSales[85][0],
-                    title: 'Asian Launch Date'
-                }
-            ]
-        };
+    componentDidMount() {
+        let props = this.props;
+        ClientAPI.getStocks()
+            .then((stocks) => {
+                props.dispatch({type: stocksActionTypes.FETCH_STOCKS, payload: stocks});
+            });
+        ClientAPI.getForecast()
+            .then((forecasts) => {
+                props.dispatch({type: forecastsActionTypes.FETCH_FORECASTS, payload: forecasts});
+            });
     }
-
-    renderPlotBand ({ from, to, title }) {
-        const id = `band-${from}-${to}`;
-        return (
-            <PlotBand id={id} key={id} from={from} to={to} color="rgba(68, 170, 213, 0.3)">
-                <PlotBand.Label>{title}</PlotBand.Label>
-            </PlotBand>
-        );
-    }
-
-    renderNavPlotBand ({ from, to }) {
-        const id = `nav-band-${from}-${to}`;
-        return (
-            <PlotBand id={id} key={id} from={from} to={to} color="rgba(68, 170, 213, 0.3)" />
-        );
-    }
-
     render () {
-        const { unitSales, notableEvents, campaigns } = this.state;
-
         return (
             <div className="app">
-                <HighchartsStockChart>
-                    <Chart zoomType="x" />
-
-                    <Title>Highstocks with Navigator Plot Bands</Title>
-
-                    <XAxis>
-                        <XAxis.Title>Date</XAxis.Title>
-                        {campaigns.map(this.renderPlotBand)}
-                    </XAxis>
-
-                    <YAxis id="sales">
-                        <YAxis.Title>Cars sold per day</YAxis.Title>
-                        <AreaSplineSeries id="unitSales" name="Unit Sales" data={unitSales} />
-                        <FlagSeries id="events" onSeries="unitSales" data={notableEvents} />
-                    </YAxis>
-
-                    <Navigator>
-                        <Navigator.Series seriesId="unitSales" />
-                        <Navigator.XAxis labels={{ x: 0, y: 12 }}>
-                            {campaigns.map(this.renderNavPlotBand)}
-                        </Navigator.XAxis>
-                    </Navigator>
-                </HighchartsStockChart>
-
+                <Loaders />
+                <StockRealTimePrices />
+                <Navigation />
+                <Route path='/' exact component={HomeComponent} />
+                <Route path='/faq' exact component={FAQComponent}/>
+                <Route path='/contact' exact component={ContactComponent}/>
+                <Footer />
             </div>
         );
     }
 }
 
-export default withHighcharts(App, Highcharts);
+export default withRouter(connect()(App));

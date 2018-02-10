@@ -13,7 +13,7 @@ services:
       volumes:
         - .:/application
       ports:
-        - "3000:3000"
+        - "3001:3001"
       links:
         - mongo
 

@@ -11,12 +11,15 @@ export const createRandomData = (time, magnitude, points = 100) => {
     for (i; i <= 0; i++) {
         data.push(createDataPoint(time, magnitude, i));
     }
+    console.log('data', data);
     return data;
 };
 
+/*
 export const addDataPoint = (data, toAdd) => {
     if (!toAdd) toAdd = createDataPoint();
     const newData = data.slice(0); // Clone
     newData.push(toAdd);
     return newData;
 };
+*/
