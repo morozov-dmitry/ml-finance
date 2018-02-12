@@ -26,6 +26,9 @@ app.get('/', function (req, res) {
     res.send('Hello World!');
 })
 
+/**
+ * Returns real time data about stock prices
+ */
 app.get('/real-time', function(req, res){
     const SYMBOLS = ['GOOG', 'IBM', 'AAPL', 'NVDA', 'SPY'];
     const FIELDS = ['a', 'b', 'b2', 'b3', 'p', 'o', 'c1', 'c', 'c6', 'k2', 'p2'];
@@ -40,11 +43,14 @@ app.get('/real-time', function(req, res){
 MongoClient.connect(dsn, (err, mongoclient) => {
 
     if (err) {
-        res.status(500).send(JSON.stringify({status: 1, message: "Can't connect to database"}))
+        res.status(500).send({status: 1, message: "Can't connect to database"})
     }
 
     const db = mongoclient.db("udacity-finance");
 
+    /**
+     * Returns historical data (14 days) about stock prices
+     */
     app.get('/history/:symbol', function (req, res) {
         const symbol = req.param('symbol')
         if (typeof(symbol) === 'undefined' || !symbols.includes(symbol)) {
@@ -55,7 +61,7 @@ MongoClient.connect(dsn, (err, mongoclient) => {
         }
         else {
             const currentDate = new Date;
-            const dateFrom = new Date(currentDate.getTime() - 31 * 24 * 60 * 60 * 1000);
+            const dateFrom = new Date(currentDate.getTime() - 14 * 24 * 60 * 60 * 1000);
             db.collection("stock_log").find({'$and': [
                     {"symbol": symbol},
                     {"date":{"$gte":dateFrom}},
@@ -74,6 +80,9 @@ MongoClient.connect(dsn, (err, mongoclient) => {
         }
     });
 
+    /**
+     * Returns forecasted data (7 days) about stock prices
+     */
     app.get('/forecast/:symbol', function (req, res) {
         const symbol = req.param('symbol')
         if (typeof(symbol) === 'undefined' || !symbols.includes(symbol)) {
@@ -135,6 +144,9 @@ MongoClient.connect(dsn, (err, mongoclient) => {
             });
     })
 
+    /**
+     * Loads data about strike prices for previous day
+     */
     app.get('/load', function (req, res) {
 
         const currentDate = new Date;
@@ -176,6 +188,9 @@ MongoClient.connect(dsn, (err, mongoclient) => {
 
     });
 
+    /**
+     * Loads data about strike prices for previous 3 months
+     */
     app.get('/full-load', function (req, res) {
 
         const processSymbolData = (err, quotes, symbol, db, res) => {

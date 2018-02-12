@@ -17,6 +17,15 @@ services:
       links:
         - mongo
 
+    python:
+      build: build/machine-learning
+      container_name: ucp-machine-learning
+      working_dir: /application/src/ml
+      volumes:
+        - .:/application
+      links:
+        - mongo
+
     webserver:
       image: nginx:alpine
       container_name: ucp-webserver
