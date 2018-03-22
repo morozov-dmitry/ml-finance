@@ -1,17 +1,10 @@
-FROM frolvlad/alpine-python3
+FROM python:3.5.3
 
-RUN apk add --no-cache libstdc++ lapack-dev && \
-    apk add --no-cache \
-        --virtual=.build-dependencies \
-        g++ gfortran musl-dev \
-        python3-dev && \
-    ln -s locale.h /usr/include/xlocale.h && \
-    pip install pymongo && \
-    pip install numpy && \
-    pip install pandas && \
-    pip install scipy && \
-    pip install scikit-learn && \
-    find /usr/lib/python3.*/ -name 'tests' -exec rm -r '{}' + && \
-    rm /usr/include/xlocale.h && \
-    rm -r /root/.cache && \
-    apk del .build-dependencies
+WORKDIR "/application/src/ml"
+
+RUN pip install flask pymongo numpy scipy pandas scikit_learn
+
+# ENTRYPOINT /bin/bash
+EXPOSE 5000
+
+ENTRYPOINT python /application/src/ml/app.py

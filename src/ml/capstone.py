@@ -27,7 +27,7 @@ median_price = np.median(prices)
 std_price = np.std(prices)
 
 # Show the calculated statistics
-print "Statistics for Boston housing dataset:\n"
+print "Statistics for dataset:\n"
 print "Minimum price: ${:,.2f}".format(minimum_price)
 print "Maximum price: ${:,.2f}".format(maximum_price)
 print "Mean price: ${:,.2f}".format(mean_price)

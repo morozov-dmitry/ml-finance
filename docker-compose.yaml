@@ -21,6 +21,15 @@ services:
       build: build/machine-learning
       container_name: ucp-machine-learning
       working_dir: /application/src/ml
+      entrypoint:
+        - flask
+        - run
+        - --host=0.0.0.0
+      environment:
+        FLASK_DEBUG: 1
+        FLASK_APP: ./app.py
+      ports: ['5000:5000']
+      #volumes: ['./web:/app']
       volumes:
         - .:/application
       links:
