@@ -3,7 +3,7 @@ from flask import Flask, Response, json
 from datetime import datetime, date, timedelta
 import pandas as pd
 import numpy as np
-from sklearn import linear_model
+from sklearn.neighbors import KNeighborsRegressor
 from pymongo import MongoClient
 import pickle
 import logging
@@ -50,11 +50,11 @@ def predict():
 
     # Train models
     for symbol in historical_data:
-        # symbol_stock_data = np.asarray(historical_data[symbol])
         symbol_stock_data = historical_data[symbol]
         logging.info(symbol_stock_data)
-        reg_model = linear_model.LinearRegression()
-        reg_model.fit(np.asarray(symbol_stock_data['X']), symbol_stock_data['Y'])
+        reg_model = KNeighborsRegressor(n_neighbors=2)
+        reg_model.fit(np.asarray([symbol_stock_data['X']]), np.asarray([symbol_stock_data['Y']]))
+
 
     logging.info('Finished')
 
