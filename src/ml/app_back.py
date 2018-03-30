@@ -31,9 +31,115 @@ def hello():
     """Initialize the database."""
     click.echo('Hello CLI')
 
+@app.route('/')
+def hello_page():
+    return 'Home page route'
 
-@app.cli.command()
+
+@app.route('/history/<symbol>', methods=['GET'])
+def history(symbol):
+    if symbol in symbols:
+
+        # Set base collection to get data
+        collection = db['stock_log']
+
+        # Define time frame for historical data to be returned
+        end_date = datetime.today()
+        start_date = end_date - timedelta(days=31)
+
+        # Get historical prices from database
+        result = list(collection.find({"$and": [{"date": {"$gte": start_date}}, {"date": {"$lte": end_date}}]},
+                                 {"date": 1, "adjClose": 1, "symbol": 1, "_id": 0}).sort([("date", pymongo.ASCENDING)]))
+
+        # Sending response with message
+        data = {'status': 0, 'data': result}
+        response = Response(
+            response=json.dumps(data),
+            status=200,
+            mimetype='application/json'
+        )
+    else:
+        # Sending response with error message
+        data = {'status': 1, 'data': 'Correct symbol must be provided'}
+        response = Response(
+            response=json.dumps(data),
+            status=400,
+            mimetype='application/json'
+        )
+
+    return response
+
+@app.route('/forecast/<symbol>', methods=['GET'])
+def forecast(symbol):
+    if symbol in symbols:
+        # Set base collection to get data
+        collection = db['stock_forecast']
+        # Define time frame for forecast data to be returned
+        start_date = datetime.today()
+        end_date = start_date + timedelta(days=7)
+        # Get forecasted prices from database
+        result = list(collection.find({"$and": [{"model":"RandomForestRegressor"}, {"date": {"$gte": start_date}}, {"date": {"$lte": end_date}}]},
+                                 {"date": 1, "forecast": 1, "symbol": 1, "_id": 0}).sort([("date", pymongo.ASCENDING)]))
+        # Sending response with message
+        data = {'status': 0, 'data': result}
+        response = Response(
+            response=json.dumps(data),
+            status=200,
+            mimetype='application/json'
+        )
+    else:
+        # Sending response with error message
+        data = {'status': 1, 'data': 'Correct symbol must be provided'}
+        response = Response(
+            response=json.dumps(data),
+            status=400,
+            mimetype='application/json'
+        )
+
+    return response
+
+@app.route('/load', methods=['GET'])
+def load():
+    # Define time frame for historical data to be returned
+    end_date = datetime.today()
+    start_date = end_date - timedelta(days=1)
+
+    responses = []
+
+    for symbol in symbols:
+
+        responses.append(symbol)
+
+        yahoo = Share('YHOO')
+
+        # Get dat from Yahoo finance API
+        # stock_data = yahoo.get_historical(start_date, end_date)
+
+        # Preparing data for saving
+        # requests = []
+        # for i in stock_data:
+        #     requests.append(InsertOne(stock_data[i]))
+
+    # Saving data to database
+    # try:
+    #     save_collection.bulk_write(requests)
+    # except BulkWriteError as bwe:
+    #     pprint(bwe.details)
+
+
+    # Sending response with message
+    data = {'status': 0, 'data': "Stock prices were downloaded", 'res': data}
+    response = Response(
+        response=json.dumps(data),
+        status=200,
+        mimetype='application/json'
+    )
+    return response
+
+
+@app.route('/predict', methods=['GET'])
 def predict():
+    logging.info('Started')
 
     collection = db['stock_log']
     save_collection = db['stock_forecast']
@@ -107,7 +213,7 @@ def predict():
             symbol_predicted_data['LinearRegression']['forecast'] = predicted_prices
 
         logging.info(predicted_prices)
-        predicted_data[symbol] = symbol_predicted_data
+        predicted_data[symbol] = symbol_predicted_data;
 
     # Saves forecasted data to database
     requests = []
@@ -128,7 +234,30 @@ def predict():
     except BulkWriteError as bwe:
         pprint(bwe.details)
 
-    # print results
-    click.echo('Machine learning algorithms has been run. Predicted data saved to database')
+    # Sending response with message
+    data = {'status': 0, 'data': "Machine learning algorithms has been run. Predicted data saved to database"}
+    response = Response(
+        response=json.dumps(data),
+        status=200,
+        mimetype='application/json'
+    )
+    return response
+
+def get_historical_data(name, number_of_days):
+	data = []
+	url = "https://finance.yahoo.com/quote/" + name + "/history/"
+	rows = bs(urllib2.urlopen(url).read()).findAll('table')[0].tbody.findAll('tr')
+
+	for each_row in rows:
+		divs = each_row.findAll('td')
+		if divs[1].span.text  != 'Dividend': #Ignore this row in the table
+			#I'm only interested in 'Open' price; For other values, play with divs[1 - 5]
+			data.append({'Date': divs[0].span.text, 'Open': float(divs[1].span.text.replace(',',''))})
+
+	return data[:number_of_days]
 
 
+
+if __name__ == '__main__':
+    app.run(port=5000, host='0.0.0.0')
+    # app.run(debug=True)
