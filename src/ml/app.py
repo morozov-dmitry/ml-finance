@@ -96,8 +96,23 @@ def predict():
         predicted_data[symbol] = symbol_predicted_data;
         # logging.info(predicted_prices)
 
-    logging.info(predicted_data)
+    # logging.info(predicted_data)
+
+    for symbol in predicted_data:
+        logging.info(symbol)
+        symbol_forecast = prediction_dates[symbol]
+        logging.info(symbol_forecast)
+        for predictionMethod in symbol_forecast.iterkeys():
+            logging.info(predictionMethod)
+
+
     logging.info('Finished')
+
+    # bulkop = coll.initialize_ordered_bulk_op()
+    # retval = bulkop.find({'field1': 1}).upsert().update({'$push': {'vals': 1})
+    # retval = bulkop.find({'field1': 1}).upsert().update({'$push': {'vals': 2})
+    # retval = bulkop.find({'field1': 1}).upsert().update({'$push': {'vals': 3})
+    # retval = bulkop.execute()
 
     # Sending response with message
     data = {'status': 0, 'data': "Machine learning algorithms has been run. Predicted data saved to database."}
