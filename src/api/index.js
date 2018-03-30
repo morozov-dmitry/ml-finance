@@ -128,7 +128,7 @@ MongoClient.connect(dsn, (err, mongoclient) => {
         for (let symbol in loadHash) {
             console.log(dateFrom, dateformat(dateFrom, "yyyy-mm-dd"), dateTo, dateformat(dateTo, "yyyy-mm-dd"));
             yahooFinance.historical({
-                symbol: symbol,
+                symbols: symbol,
                 from: dateformat(dateFrom, "yyyy-mm-dd"),
                 to: dateformat(dateTo, "yyyy-mm-dd"),
             }, (err, quotes) => processSymbolData(err, quotes, symbol, db));
@@ -141,28 +141,6 @@ MongoClient.connect(dsn, (err, mongoclient) => {
      */
     app.get('/full-load', function (req, resp) {
 
-        const processSymbolData = (err, quotes, symbol, db) => {
-
-            db.collection("stock_log").insertMany(quotes, function (err, result) {
-                if (err) throw err;
-                console.log(symbol + " " + quotes.length + " documents were inserted", result);
-            });
-
-            loadHash[symbol] = true
-            let showResponse = true
-            for (let hashSymbol in loadHash) {
-                if (!loadHash[hashSymbol]) {
-                    showResponse = false
-                    break
-                }
-            }
-
-            if (showResponse) {
-                resp.send({status: 0, data: 'Stock prices were downloaded'});
-            }
-
-        }
-
         // Current day
         const currentDate = new Date;
         const dateTo = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000);
@@ -170,15 +148,23 @@ MongoClient.connect(dsn, (err, mongoclient) => {
         // Previous 7 days
         const dateFrom = new Date(dateTo.getTime() - 3 * 31 * 24 * 60 * 60 * 1000);
 
-        let loadHash = createSymbolsLoadHash()
+        yahooFinance.historical({
+            symbols: symbols,
+            from: dateformat(dateFrom, "yyyy-mm-dd"),
+            to: dateformat(dateTo, "yyyy-mm-dd"),
+        }, (err, quotes) => {
 
-        for (let symbol in loadHash) {
-            yahooFinance.historical({
-                symbol: symbol,
-                from: dateformat(dateFrom, "yyyy-mm-dd"),
-                to: dateformat(dateTo, "yyyy-mm-dd"),
-            }, (err, quotes) => processSymbolData(err, quotes, symbol, db));
-        }
+            if (err) throw err;
+
+            db.collection("stock_log").insertMany(quotes, function (queryerr, result) {
+                if (queryerr) throw queryerr;
+                console.log(symbol + " " + quotes.length + " documents were inserted", result);
+                resp.send({status: 0, data: 'Stock prices were downloaded'});
+            })
+
+        })
+
+
 
     })
 
