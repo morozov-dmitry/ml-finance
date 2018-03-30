@@ -5,17 +5,17 @@ services:
       image: mongo
       container_name: ucp-mongodb
 
-    nodejs:
-      build: build/nodejs
-      restart: always
-      container_name: ucp-nodejs
-      working_dir: /application/src/api
-      volumes:
-        - .:/application
-      ports:
-        - "3001:3001"
-      links:
-        - mongo
+#    nodejs:
+#      build: build/nodejs
+#      restart: always
+#      container_name: ucp-nodejs
+#      working_dir: /application/src/api
+#      volumes:
+#        - .:/application
+#      ports:
+#        - "3001:3001"
+#      links:
+#        - mongo
 
     python:
       build: build/machine-learning

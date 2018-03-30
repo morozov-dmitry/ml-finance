@@ -34,32 +34,23 @@ MongoClient.connect(dsn, (err, mongoclient) => {
      * Returns historical data (14 days) about stock prices
      */
     app.get('/history/:symbol', function (req, res) {
-        const symbol = req.param('symbol')
-        if (typeof(symbol) === 'undefined' || !symbols.includes(symbol)) {
-            res.status(400).send({
-                status: 1,
-                message: "Correct symbol must be provides (one of " + symbols.concat(', ') + ")"
-            })
-        }
-        else {
-            const currentDate = new Date;
-            const dateFrom = new Date(currentDate.getTime() - 14 * 24 * 60 * 60 * 1000);
-            db.collection("stock_log").find({'$and': [
-                        {"symbol": symbol},
-                        {"date":{"$gte":dateFrom}},
-                        {"date":{"$lte":currentDate}}
-                    ]},
-                {fields: {_id: 0, open: 0, close: 0, high: 0, low: 0, volume: 0, symbol: 0}})
-                .sort({date: 1})
-                .toArray(function (err, stocks) {
-                    if (!err) {
-                        res.send({"status": 0, "data": stocks});
-                    }
-                    else {
-                        res.send({"status": 1, "error": err});
-                    }
-                });
-        }
+        const currentDate = new Date;
+        const dateFrom = new Date(currentDate.getTime() - 14 * 24 * 60 * 60 * 1000);
+        db.collection("stock_log").find({'$and': [
+                {"symbol": symbol},
+                {"date":{"$gte":dateFrom}},
+                {"date":{"$lte":currentDate}}
+            ]},
+            {fields: {_id: 0, open: 0, close: 0, high: 0, low: 0, volume: 0, symbol: 0}})
+            .sort({date: 1})
+            .toArray(function (err, stocks) {
+                if (!err) {
+                    res.send({"status": 0, "data": stocks});
+                }
+                else {
+                    res.send({"status": 1, "error": err});
+                }
+            });
     });
 
     /**
@@ -190,40 +181,6 @@ MongoClient.connect(dsn, (err, mongoclient) => {
                 });
         }
     });
-
-    // @todo remove after python implementation
-    app.get('/fake-forecast', function (req, res) {
-        const currentDate = new Date;
-        const dateFrom = new Date(currentDate.getTime() - 8 * 24 * 60 * 60 * 1000);
-        db.collection("stock_log").find({'$and': [
-                    {"symbol": 'GOOG'},
-                    {"date":{"$gte":dateFrom}}
-                ]},
-            {fields: {_id: 0}})
-            .sort({date: 1})
-            .toArray(function (err, stocks) {
-                if (!err) {
-                    const data = [];
-                    let i = 1;
-                    stocks.map((stock) => {
-                        stock.date = new Date(currentDate.getTime() + i * 24 * 60 * 60 * 1000);
-                        stock.forecast = stock.adjClose + (Math.random() * (10 - (-10)) + (-10))
-                        data.push(stock)
-                        i++;
-                    })
-                    db.collection("stock_forecast").insertMany(data, function (err, res) {
-                        if (err) throw err;
-                        console.log(data.length + " documents were inserted", res);
-                    });
-                    res.send({"status": 0, "data": "ok"});
-                }
-                else {
-                    res.send({"status": 1, "error": err});
-                }
-            });
-    })
-
-
 });
 
 app.listen(3001, function () {

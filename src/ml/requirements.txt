@@ -1,6 +1,8 @@
 numpy==1.13
 scipy==0.19.1
 Flask==0.12.2
+flask-cors==3.0.3
 pandas==0.20.2
 scikit_learn==0.18.2
 pymongo==3.6.1
+yahoo-finance==1.4.0

@@ -1,5 +1,6 @@
 #!flask/bin/python
 from flask import Flask, Response, json
+from flask_cors import CORS, cross_origin
 from datetime import datetime, date, timedelta
 import pandas as pd
 import numpy as np
@@ -7,21 +8,24 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn import cross_validation
-
+from yahoo_finance import Share
+import pymongo
 from pymongo import MongoClient
-import pickle
-import logging
+from pymongo import InsertOne
+from pymongo.errors import BulkWriteError
 
-# creating and saving some model
-# reg_model = linear_model.LinearRegression()
-# reg_model.fit([[1.,1.,5.], [2.,2.,5.], [3.,3.,1.]], [0.,0.,1.])
-# pickle.dump(reg_model, open('some_model.pkl', 'wb'))
+import logging
 
 # Prepare data for training
 client = MongoClient('mongodb://mongo:27017/')
 db = client['udacity-finance']
 
 app = Flask(__name__)
+CORS(app)
+
+logging.basicConfig(filename='myapp.log', level=logging.INFO)
+
+symbols = ['GOOG']
 
 
 @app.route('/')
@@ -29,13 +33,113 @@ def hello_page():
     return 'Home page route'
 
 
+@app.route('/history/<symbol>', methods=['GET'])
+def history(symbol):
+    if symbol in symbols:
+
+        # Set base collection to get data
+        collection = db['stock_log']
+
+        # Define time frame for historical data to be returned
+        end_date = datetime.today()
+        start_date = end_date - timedelta(days=31)
+
+        # Get historical prices from database
+        result = list(collection.find({"$and": [{"date": {"$gte": start_date}}, {"date": {"$lte": end_date}}]},
+                                 {"date": 1, "adjClose": 1, "symbol": 1, "_id": 0}).sort([("date", pymongo.ASCENDING)]))
+
+        # Sending response with message
+        data = {'status': 0, 'data': result}
+        response = Response(
+            response=json.dumps(data),
+            status=200,
+            mimetype='application/json'
+        )
+    else:
+        # Sending response with error message
+        data = {'status': 1, 'data': 'Correct symbol must be provided'}
+        response = Response(
+            response=json.dumps(data),
+            status=400,
+            mimetype='application/json'
+        )
+
+    return response
+
+@app.route('/forecast/<symbol>', methods=['GET'])
+def forecast(symbol):
+    if symbol in symbols:
+        # Set base collection to get data
+        collection = db['stock_forecast']
+        # Define time frame for forecast data to be returned
+        start_date = datetime.today()
+        end_date = start_date + timedelta(days=7)
+        # Get forecasted prices from database
+        result = list(collection.find({"$and": [{"model":"RandomForestRegressor"}, {"date": {"$gte": start_date}}, {"date": {"$lte": end_date}}]},
+                                 {"date": 1, "forecast": 1, "symbol": 1, "_id": 0}).sort([("date", pymongo.ASCENDING)]))
+        # Sending response with message
+        data = {'status': 0, 'data': result}
+        response = Response(
+            response=json.dumps(data),
+            status=200,
+            mimetype='application/json'
+        )
+    else:
+        # Sending response with error message
+        data = {'status': 1, 'data': 'Correct symbol must be provided'}
+        response = Response(
+            response=json.dumps(data),
+            status=400,
+            mimetype='application/json'
+        )
+
+    return response
+
+@app.route('/load', methods=['GET'])
+def load():
+    # Define time frame for historical data to be returned
+    end_date = datetime.today()
+    start_date = end_date - timedelta(days=1)
+
+    responses = []
+
+    for symbol in symbols:
+
+        responses.append(symbol)
+
+        yahoo = Share('YHOO')
+
+        # Get dat from Yahoo finance API
+        # stock_data = yahoo.get_historical(start_date, end_date)
+
+        # Preparing data for saving
+        # requests = []
+        # for i in stock_data:
+        #     requests.append(InsertOne(stock_data[i]))
+
+    # Saving data to database
+    # try:
+    #     save_collection.bulk_write(requests)
+    # except BulkWriteError as bwe:
+    #     pprint(bwe.details)
+
+
+    # Sending response with message
+    data = {'status': 0, 'data': "Stock prices were downloaded", 'res': responses}
+    response = Response(
+        response=json.dumps(data),
+        status=200,
+        mimetype='application/json'
+    )
+    return response
+
+
 @app.route('/predict', methods=['GET'])
 def predict():
-
-    logging.basicConfig(filename='myapp.log', level=logging.INFO)
     logging.info('Started')
 
     collection = db['stock_log']
+    save_collection = db['stock_forecast']
 
     # Define time frame for historical data to train the model
     today = datetime.today()
@@ -53,69 +157,82 @@ def predict():
     historical_data = {}
     for stock_data in collection.find({"date": {"$gt": start_date}}, {"date": 1, "adjClose": 1, "symbol": 1, "_id": 0}):
         if stock_data['symbol'] not in historical_data:
-            historical_data[stock_data['symbol']] = {'X':[], 'Y':[]}
+            historical_data[stock_data['symbol']] = {'X': [], 'Y': []}
         historical_data[stock_data['symbol']]['X'].append([stock_data['date'].toordinal()])
-        historical_data[stock_data['symbol']]['Y'].append(np.log(stock_data['adjClose']))
+        historical_data[stock_data['symbol']]['Y'].append(stock_data['adjClose'])
 
     # Train models
     predicted_data = {}
     for symbol in historical_data:
 
-        symbol_predicted_data = {'KNeighborsRegressor': {}, 'RandomForestRegressor': {}, 'LinearRegression': {}}
+        symbol_predicted_data = {
+            'KNeighborsRegressor': {
+                'score': 0,
+                'forecast': []
+            },
+            'RandomForestRegressor': {
+                'score': 0,
+                'forecast': []
+            },
+            'LinearRegression': {
+                'score': 0,
+                'forecast': []
+            }}
+
         symbol_stock_data = historical_data[symbol]
 
-        logging.info("symbol_stock_data['X']")
-        logging.info(symbol_stock_data['X'])
-        logging.info("prediction_dates")
-        logging.info(prediction_dates)
-
-        X_train, X_test, y_train, y_test = cross_validation.train_test_split(symbol_stock_data['X'], symbol_stock_data['Y'], test_size=0.2, train_size=0.8, random_state=3)
+        X_train, X_test, y_train, y_test = cross_validation.train_test_split(symbol_stock_data['X'],
+                                                                             symbol_stock_data['Y'], test_size=0.2,
+                                                                             train_size=0.8, random_state=3)
 
         # KNeighborsRegressor model
         reg_model = KNeighborsRegressor(n_neighbors=2)
         reg_model.fit(X_train, y_train)
         predicted_prices = reg_model.predict(prediction_dates)
+        symbol_predicted_data['KNeighborsRegressor']['score'] = reg_model.score(X_test, y_test)
         for i in symbol_predicted_data:
-            symbol_predicted_data['KNeighborsRegressor'] = predicted_prices
+            symbol_predicted_data['KNeighborsRegressor']['forecast'] = predicted_prices
 
         # RandomForestRegressor model
         reg_model = RandomForestRegressor(random_state=0)
-        reg_model.fit(symbol_stock_data['X'], symbol_stock_data['Y'])
+        reg_model.fit(X_train, y_train)
         predicted_prices = reg_model.predict(prediction_dates)
+        symbol_predicted_data['RandomForestRegressor']['score'] = reg_model.score(X_test, y_test)
         for i in symbol_predicted_data:
-            symbol_predicted_data['RandomForestRegressor'] = predicted_prices
+            symbol_predicted_data['RandomForestRegressor']['forecast'] = predicted_prices
 
         # LinearRegression model
         reg_model = LinearRegression()
-        reg_model.fit(symbol_stock_data['X'], symbol_stock_data['Y'])
+        reg_model.fit(X_train, y_train)
         predicted_prices = reg_model.predict(prediction_dates)
+        symbol_predicted_data['LinearRegression']['score'] = reg_model.score(X_test, y_test)
         for i in symbol_predicted_data:
-            symbol_predicted_data['LinearRegression'] = predicted_prices
+            symbol_predicted_data['LinearRegression']['forecast'] = predicted_prices
 
         logging.info(predicted_prices)
         predicted_data[symbol] = symbol_predicted_data;
-        # logging.info(predicted_prices)
 
-    # logging.info(predicted_data)
-
+    # Saves forecasted data to database
+    requests = []
     for symbol in predicted_data:
-        logging.info(symbol)
-        symbol_forecast = prediction_dates[symbol]
-        logging.info(symbol_forecast)
-        for predictionMethod in symbol_forecast.iterkeys():
-            logging.info(predictionMethod)
+        symbol_data_prediction = predicted_data[symbol]
+        for model in symbol_data_prediction:
+            symbol_predicted_data = symbol_data_prediction[model]
+            model_score = symbol_predicted_data['score']
+            for day_number in range(0, numdays):
+                forecast = symbol_predicted_data['forecast'][day_number]
+                forecast_date = datetime.fromordinal(prediction_dates[day_number][0])
+                record = {'date': forecast_date, 'symbol': symbol, 'forecast': forecast, 'model': model,
+                          'score': model_score}
+                requests.append(InsertOne(record))
 
-
-    logging.info('Finished')
-
-    # bulkop = coll.initialize_ordered_bulk_op()
-    # retval = bulkop.find({'field1': 1}).upsert().update({'$push': {'vals': 1})
-    # retval = bulkop.find({'field1': 1}).upsert().update({'$push': {'vals': 2})
-    # retval = bulkop.find({'field1': 1}).upsert().update({'$push': {'vals': 3})
-    # retval = bulkop.execute()
+    try:
+        save_collection.bulk_write(requests)
+    except BulkWriteError as bwe:
+        pprint(bwe.details)
 
     # Sending response with message
-    data = {'status': 0, 'data': "Machine learning algorithms has been run. Predicted data saved to database."}
+    data = {'status': 0, 'data': "Machine learning algorithms has been run. Predicted data saved to database"}
     response = Response(
         response=json.dumps(data),
         status=200,
@@ -123,15 +240,6 @@ def predict():
     )
     return response
 
-
-# @app.route('/prediction/api/v1.0/some_prediction', methods=['GET'])
-# def get_prediction():
-#     feature1 = float(request.args.get('f1'))
-#     feature2 = float(request.args.get('f2'))
-#     feature3 = float(request.args.get('f3'))
-#     loaded_model = pickle.load(open('some_model.pkl', 'rb'))
-#     prediction = loaded_model.predict([[feature1, feature2, feature3]])
-#     return str(prediction)
 
 if __name__ == '__main__':
     app.run(port=5000, host='0.0.0.0')
