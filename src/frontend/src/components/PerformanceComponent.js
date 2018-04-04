@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import StockChart from './plugins/StockChart'
 
-class HomeComponent extends Component {
+class PerformanceComponent extends Component {
 
     render() {
         const stocks = this.props.stocks.list;
@@ -38,9 +38,10 @@ class HomeComponent extends Component {
 
 function mapStateToProps(state, ownProps) {
     return {
+        symbols: state.symbols,
         stocks: state.stocks,
         forecasts: state.forecasts
     }
 }
 
-export default connect(mapStateToProps)(HomeComponent);
+export default connect(mapStateToProps)(PerformanceComponent);

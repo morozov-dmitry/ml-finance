@@ -5,10 +5,11 @@ from flask_cors import CORS, cross_origin
 from datetime import datetime, date, timedelta
 import pandas as pd
 import numpy as np
-from yahoo_finance import Share
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.svm import SVR
+from sklearn.neural_network import MLPRegressor
 from sklearn import cross_validation
 import pymongo
 from pymongo import MongoClient
@@ -77,6 +78,14 @@ def predict():
                 'score': 0,
                 'forecast': []
             },
+            'SVRegression': {
+                'score': 0,
+                'forecast': []
+            },
+            'MLPRegressor': {
+                'score': 0,
+                'forecast': []
+            },
         }
 
         symbol_stock_data = historical_data[symbol]
@@ -84,6 +93,9 @@ def predict():
         X_train, X_test, y_train, y_test = cross_validation.train_test_split(symbol_stock_data['X'],
                                                                              symbol_stock_data['Y'], test_size=0.2,
                                                                              train_size=0.8, random_state=3)
+
+
+        # sklearn.neural_network.MLPRegressor
 
         # KNeighborsRegressor model
         reg_model = KNeighborsRegressor(n_neighbors=2)
@@ -109,6 +121,25 @@ def predict():
         for i in symbol_predicted_data:
             symbol_predicted_data['LinearRegression']['forecast'] = predicted_prices
 
+        # SVR model
+        reg_model = SVR()
+        reg_model.fit(X_train, y_train)
+        predicted_prices = reg_model.predict(prediction_dates)
+        symbol_predicted_data['SVRegression']['score'] = reg_model.score(X_test, y_test)
+        for i in symbol_predicted_data:
+            symbol_predicted_data['SVRegression']['forecast'] = predicted_prices
+
+        logging.info(predicted_prices)
+        predicted_data[symbol] = symbol_predicted_data
+
+        # Multi-layer Perceptron regressor model
+        reg_model = MLPRegressor()
+        reg_model.fit(X_train, y_train)
+        predicted_prices = reg_model.predict(prediction_dates)
+        symbol_predicted_data['MLPRegressor']['score'] = reg_model.score(X_test, y_test)
+        for i in symbol_predicted_data:
+            symbol_predicted_data['MLPRegressor']['forecast'] = predicted_prices
+
         logging.info(predicted_prices)
         predicted_data[symbol] = symbol_predicted_data
 
@@ -122,8 +153,7 @@ def predict():
             for day_number in range(0, numdays):
                 forecast = symbol_predicted_data['forecast'][day_number]
                 forecast_date = datetime.fromordinal(prediction_dates[day_number][0])
-                record = {'date': forecast_date, 'symbol': symbol, 'forecast': forecast, 'model': model,
-                          'score': model_score}
+                record = {'date': forecast_date, 'symbol': symbol, 'forecast': forecast, 'model': model, 'score': model_score}
                 requests.append(InsertOne(record))
 
     try:
@@ -133,5 +163,13 @@ def predict():
 
     # print results
     click.echo('Machine learning algorithms has been run. Predicted data saved to database')
+
+    # Response
+    response = Response(
+        response=json.dumps(data),
+        status=200,
+        mimetype='application/json'
+    )
+    return response
 
 

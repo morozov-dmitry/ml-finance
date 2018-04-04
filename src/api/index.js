@@ -18,7 +18,7 @@ app.get('/', function (req, res) {
 
 MongoClient.connect(dsn, (err, mongoclient) => {
 
-    const db = mongoclient.db("udacity-finance");
+    const db = mongoclient.db("udacity-finance")
 
     /**
      * Returns historical data (14 days) about stock prices

@@ -21,6 +21,9 @@ export default class Navigation extends Component {
                                         <li className="nav-item active">
                                             <Link className="nav-link" to="/">Home</Link>
                                         </li>
+                                        <li className="nav-item active">
+                                            <Link className="nav-link" to="/">Performance history</Link>
+                                        </li>
                                         <li className="nav-item">
                                             <Link className="nav-link" to="/faq">F.A.Q</Link>
                                         </li>
