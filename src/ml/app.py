@@ -76,7 +76,8 @@ def predict():
             'LinearRegression': {
                 'score': 0,
                 'forecast': []
-            }}
+            },
+        }
 
         symbol_stock_data = historical_data[symbol]
 
