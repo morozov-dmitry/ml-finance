@@ -26,13 +26,14 @@ logging.basicConfig(filename='myapp.log', level=logging.INFO)
 
 symbols = ['GOOG']
 
-@app.cli.command()
+@app.route('/')
+# @app.cli.command()
 def hello():
     """Initialize the database."""
     click.echo('Hello CLI')
 
-
-@app.cli.command()
+@app.route('/predict')
+# @app.cli.command()
 def predict():
 
     collection = db['stock_log']
@@ -41,6 +42,7 @@ def predict():
     # Define time frame for historical data to train the model
     today = datetime.today()
     start_date = today - timedelta(days=60)
+    end_date = today - timedelta(days=1)
 
     prediction_dates = []
 

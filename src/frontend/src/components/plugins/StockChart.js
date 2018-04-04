@@ -1,29 +1,31 @@
 import React, { Component } from 'react';
 import {createRandomData} from "../../helpers/data-helpers";
 import Highcharts from 'highcharts/highstock'
-import {HighchartsStockChart, Chart, withHighcharts, XAxis, YAxis, Title, Series, FlagSeries, Navigator, PlotBand} from 'react-jsx-highstock'
+import {HighchartsStockChart, Tooltip, Chart, withHighcharts, XAxis, YAxis, AreaSplineSeries, Title, Series, FlagSeries, Navigator, PlotBand} from 'react-jsx-highstock'
 
 class StockChart extends Component {
 
     constructor (props) {
         super(props)
-        const unitSales = props.historyData
-        const unitSales2 = props.forecastedData
+        const historyData = props.historyData
+        const forecastedData = props.forecastedData
         this.state = {
-            unitSales,
-            unitSales2
+            historyData,
+            forecastedData
         }
     }
 
     render() {
-        console.log(this.state);
-        const { unitSales, unitSales2 } = this.state;
+        const { historyData, forecastedData } = this.state;
         return (
             <section>
                 <HighchartsStockChart>
+
                     <Chart zoomType="x" />
 
                     <Title>Highstocks with Navigator Plot Bands</Title>
+
+                    <Tooltip />
 
                     <XAxis ordinal={"true"}>
                         <XAxis.Title>Date</XAxis.Title>
@@ -31,13 +33,13 @@ class StockChart extends Component {
 
                     <YAxis id="sales">
                         <YAxis.Title>Stock price</YAxis.Title>
-                        <Series id="unitSales" name="History data" data={unitSales} />
-                        <Series id="unitSales2" name="Forecasted data" data={unitSales2} />
+                        <Series id="historyData" name="Price" data={historyData} />
+                        <Series id="forecastedData" name="Forecasted price" data={forecastedData} />
                     </YAxis>
 
                     <Navigator>
-                        <Navigator.Series seriesId="unitSales" />
-                        <Navigator.Series seriesId="unitSales2" />
+                        <Navigator.Series seriesId="historyData" />
+                        <Navigator.Series seriesId="forecastedData" />
                     </Navigator>
 
                 </HighchartsStockChart>

@@ -1,8 +1,9 @@
-FROM node:alpine
+FROM node:carbon
 
 WORKDIR "/application/src/api"
 
 RUN npm install --global nodemon
+
 RUN npm install
 CMD node index.js
 

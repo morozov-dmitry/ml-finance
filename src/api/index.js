@@ -10,20 +10,10 @@ app.use(cors())
 const dsn = "mongodb://mongo:27017/udacity-finance";
 
 // Stock prices symbols to download
-// let symbols = ['GOOG', 'IBM', 'AAPL', 'NVDA', 'SPY']
-
-const symbols = ['GOOG']
-
-const createSymbolsLoadHash = () => {
-    let loadHash = {}
-    symbols.forEach((symbol) => {
-        loadHash[symbol] = false
-    })
-    return loadHash;
-}
+const symbols = ['GOOG', 'IBM', 'AAPL', 'NVDA', 'SPY']
 
 app.get('/', function (req, res) {
-    res.send('Hello World!');
+    res.send('Welcome to udacity-finance API');
 })
 
 MongoClient.connect(dsn, (err, mongoclient) => {
@@ -34,8 +24,9 @@ MongoClient.connect(dsn, (err, mongoclient) => {
      * Returns historical data (14 days) about stock prices
      */
     app.get('/history/:symbol', function (req, res) {
+        const symbol = req.param('symbol')
         const currentDate = new Date;
-        const dateFrom = new Date(currentDate.getTime() - 14 * 24 * 60 * 60 * 1000);
+        const dateFrom = new Date(currentDate.getTime() - 21 * 24 * 60 * 60 * 1000);
         db.collection("stock_log").find({'$and': [
                 {"symbol": symbol},
                 {"date":{"$gte":dateFrom}},
@@ -66,13 +57,15 @@ MongoClient.connect(dsn, (err, mongoclient) => {
         }
         else {
             const currentDate = new Date;
+            const dateFrom = new Date(currentDate.getTime() - 1 * 24 * 60 * 60 * 1000);
             const dateTo = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
             db.collection("stock_forecast").find({'$and': [
-                    {"symbol": symbol},
-                    {"date":{"$gte":currentDate}},
+                    {"model":"KNeighborsRegressor"},
+                    {"symbol":symbol},
+                    {"date":{"$gte":dateFrom}},
                     {"date":{"$lte":dateTo}}
                 ]},
-                {fields: {_id: 0, open: 0, close: 0, high: 0, low: 0, volume: 0, symbol: 0, adjClose: 0}})
+                {fields: {_id: 0, open: 0, close: 0, high: 0, low: 0, volume: 0, symbol: 0, adjClose: 0, model: 0, score: 0}})
                 .sort({date: 1})
                 .toArray(function (err, stocks) {
                     if (!err) {
@@ -85,56 +78,31 @@ MongoClient.connect(dsn, (err, mongoclient) => {
         }
     });
 
+
     /**
-     * Loads data about strike prices for previous day
+     * Loads data about strike prices for previous 3 months
      */
     app.get('/load', function (req, resp) {
 
-        const currentDate = new Date;
-        const dateTo = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000);
-        const dateFrom = dateTo;
+        const dateTo = new Date;
+        const dateFrom = new Date(dateTo.getTime() - 24 * 60 * 60 * 1000);
 
-        const processSymbolData = (err, quotes, symbol, db) => {
-
-            try
-            {
-                loadHash[symbol] = true
-                db.collection("stock_log").insertMany(quotes, function (err, result) {
-                    if (err) throw err;
-                    console.log(symbol + " " + quotes.length + " documents were inserted", result);
-                });
+        yahooFinance.historical({
+            symbols: symbols,
+            from: dateformat(dateFrom, "yyyy-mm-dd"),
+            to: dateformat(dateTo, "yyyy-mm-dd"),
+        }, (err, quotes) => {
+            if (err) throw err;
+            let stocks = []
+            for(let symbol in quotes) {
+                stocks = stocks.concat(quotes[symbol])
             }
-            catch(e){
-                console.log(e);
-            }
-
-
-            let showResponse = true
-            for (let hashSymbol in loadHash) {
-                if (!loadHash[hashSymbol]) {
-                    showResponse = false
-                    break
-                }
-            }
-
-            if (showResponse) {
+            db.collection("stock_log").insertMany(stocks, function (queryerr, result) {
+                if (queryerr) throw queryerr;
                 resp.send({status: 0, data: 'Stock prices were downloaded'});
-            }
-
-        }
-
-        let loadHash = createSymbolsLoadHash()
-
-        for (let symbol in loadHash) {
-            console.log(dateFrom, dateformat(dateFrom, "yyyy-mm-dd"), dateTo, dateformat(dateTo, "yyyy-mm-dd"));
-            yahooFinance.historical({
-                symbols: symbol,
-                from: dateformat(dateFrom, "yyyy-mm-dd"),
-                to: dateformat(dateTo, "yyyy-mm-dd"),
-            }, (err, quotes) => processSymbolData(err, quotes, symbol, db));
-        }
-
-    });
+            })
+        })
+    })
 
     /**
      * Loads data about strike prices for previous 3 months
@@ -145,7 +113,7 @@ MongoClient.connect(dsn, (err, mongoclient) => {
         const currentDate = new Date;
         const dateTo = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000);
 
-        // Previous 7 days
+        // Previous 3 months
         const dateFrom = new Date(dateTo.getTime() - 3 * 31 * 24 * 60 * 60 * 1000);
 
         yahooFinance.historical({
@@ -153,19 +121,16 @@ MongoClient.connect(dsn, (err, mongoclient) => {
             from: dateformat(dateFrom, "yyyy-mm-dd"),
             to: dateformat(dateTo, "yyyy-mm-dd"),
         }, (err, quotes) => {
-
             if (err) throw err;
-
-            db.collection("stock_log").insertMany(quotes, function (queryerr, result) {
+            let stocks = []
+            for(let symbol in quotes) {
+                stocks = stocks.concat(quotes[symbol])
+            }
+            db.collection("stock_log").insertMany(stocks, function (queryerr, result) {
                 if (queryerr) throw queryerr;
-                console.log(symbol + " " + quotes.length + " documents were inserted", result);
                 resp.send({status: 0, data: 'Stock prices were downloaded'});
             })
-
         })
-
-
-
     })
 
 });
