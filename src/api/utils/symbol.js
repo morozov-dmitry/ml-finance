@@ -1,1 +1,5 @@
-export const symbols = ['GOOG'/*, 'IBM', 'AAPL', 'NVDA', 'SPY'*/]
+const list = ['GOOG', 'IBM', 'AAPL', 'NVDA', 'SPY']
+
+module.exports = {
+    list
+}

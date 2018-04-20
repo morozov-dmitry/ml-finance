@@ -1,8 +1,10 @@
-const express = require('express');
+const express = require('express')
 const cors = require('cors')
-const dateformat = require('dateformat');
-const yahooFinance = require('yahoo-finance');
-const MongoClient = require('mongodb').MongoClient;
+const dateformat = require('dateformat')
+const yahooFinance = require('yahoo-finance')
+const mongoClient = require('mongodb').MongoClient
+const symbol = require('./utils/symbol');
+const dateTimeHelper = require('./utils/dateTimeHelper')
 
 let app = express();
 app.use(cors())
@@ -10,15 +12,15 @@ app.use(cors())
 const dsn = "mongodb://mongo:27017/udacity-finance";
 
 // Stock prices symbols to download
-const symbols = ['GOOG', 'IBM', 'AAPL', 'NVDA', 'SPY']
+const symbols = symbol.list
 
 app.get('/', function (req, res) {
     res.send('Welcome to udacity-finance API');
 })
 
-MongoClient.connect(dsn, (err, mongoclient) => {
+mongoClient.connect(dsn, (err, mongoClient) => {
 
-    const db = mongoclient.db("udacity-finance")
+    const db = mongoClient.db("udacity-finance")
 
     /**
      * Returns historical data (14 days) about stock prices
@@ -56,9 +58,9 @@ MongoClient.connect(dsn, (err, mongoclient) => {
             })
         }
         else {
-            const currentDate = new Date;
-            const dateFrom = new Date(currentDate.getTime() - 1 * 24 * 60 * 60 * 1000);
-            const dateTo = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+            [dateFrom, dateTo] = dateTimeHelper.getForecastWindow()
+
             db.collection("stock_forecast").find({'$and': [
                     {"model":"KNeighborsRegressor"},
                     {"symbol":symbol},
@@ -84,8 +86,7 @@ MongoClient.connect(dsn, (err, mongoclient) => {
      */
     app.get('/load', function (req, resp) {
 
-        const dateTo = new Date;
-        const dateFrom = new Date(dateTo.getTime() - 24 * 60 * 60 * 1000);
+        [dateFrom, dateTo] = dateTimeHelper.getLoadDataWindow()
 
         yahooFinance.historical({
             symbols: symbols,
@@ -112,7 +113,6 @@ MongoClient.connect(dsn, (err, mongoclient) => {
         // Current day
         const currentDate = new Date;
         const dateTo = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000);
-
         // Previous 3 months
         const dateFrom = new Date(dateTo.getTime() - 3 * 31 * 24 * 60 * 60 * 1000);
 
