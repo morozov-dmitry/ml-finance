@@ -23,7 +23,7 @@ class StockChart extends Component {
 
                     <Chart zoomType="x" />
 
-                    <Title>Highstocks with Navigator Plot Bands</Title>
+                    <Title>Stock prices</Title>
 
                     <Tooltip />
 

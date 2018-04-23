@@ -13,7 +13,7 @@ class StockRealTimePrices extends Component {
                             <ul className="currency-status">
                                 {symbols.map((symbol) => (
                                     <li>
-                                        <a>
+                                        <a href="">
                                             <span>{symbol}</span>
                                         </a>
                                     </li>
