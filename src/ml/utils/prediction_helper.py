@@ -9,7 +9,7 @@ from models.sv_regression import SVRegressor
 from models.k_neighbors_regression import KNNRegressor
 
 class PredictionHelper(object):
-    """ Complex route planner that is meant for a perpendicular grid network. """
+    """ Helper for running predictions on data with with differnt regression models. """
 
     def __init__(self):
         self.mongo_helper = MongoHelper()
@@ -17,6 +17,7 @@ class PredictionHelper(object):
         self.result_helper = PredictionResults()
 
     def make_prediction(self, start_date, numdays = 7):
+        """ Predicts stock prices for upcoming week. """
 
         # Timeseries for predict
         prediction_dates = self.date_helper.get_prediciton_dates_series()
@@ -28,13 +29,14 @@ class PredictionHelper(object):
         for symbol in historical_data:
 
             # symbol_stock_data
-            self.run_prediction_models_fro_symbol_data(symbol, historical_data[symbol], prediction_dates)
+            self.run_prediction_models_from_symbol_data(symbol, historical_data[symbol], prediction_dates)
 
         # Saves forecasted data to database
         self.mongo_helper.save_forecast_data(self.result_helper.prediction_results, prediction_dates, numdays)
 
 
     def make_prediciton_for_historical_data(self, start_date, numdays = 1):
+        """ Makes prediction of historical data based on historical look back window """
 
         # Load historical data from database
         historical_data = self.mongo_helper.get_historical_data(start_date)
@@ -58,7 +60,7 @@ class PredictionHelper(object):
                     'Y': historical_data[symbol]['Y'][i:(prediction_window + i)]
                 }
 
-                self.run_prediction_models_fro_symbol_data(symbol, historical_data_slice, prediction_dates)
+                self.run_prediction_models_from_symbol_data(symbol, historical_data_slice, prediction_dates)
 
                 # Saves forecasted data to database
                 self.mongo_helper.save_forecast_data(self.result_helper.prediction_results, prediction_dates, numdays = 1)
@@ -66,7 +68,8 @@ class PredictionHelper(object):
                 self.result_helper.prediction_results = {}
 
 
-    def run_prediction_models_fro_symbol_data(self, symbol, historical_data, prediction_dates):
+    def run_prediction_models_from_symbol_data(self, symbol, historical_data, prediction_dates):
+        """ Runs regressions on historical data to make stocks data prediction """
 
         # symbol_stock_data
         symbol_prediction_results = SymbolResults(symbol, historical_data)
@@ -87,4 +90,5 @@ class PredictionHelper(object):
         knn_regressor = KNNRegressor(symbol_prediction_results)
         knn_regressor.predict(prediction_dates)
 
+        # Save data to database
         self.result_helper.save_symbol_prediction_data(symbol_prediction_results)

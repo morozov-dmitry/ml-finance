@@ -1,7 +1,7 @@
 from datetime import datetime, date, timedelta
 
 class DateTimeHelper(object):
-    """ Complex route planner that is meant for a perpendicular grid network. """
+    """ Provides method for data forecasting. """
 
     def get_prediciton_dates_series(self, start_date = None, numdays = 7):
         if start_date is None:

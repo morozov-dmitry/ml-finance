@@ -6,7 +6,7 @@ from pymongo import InsertOne
 from pymongo.errors import BulkWriteError
 
 class MongoHelper(object):
-    """ Complex route planner that is meant for a perpendicular grid network. """
+    """ Helper provide high-level interface for getting and saving stock prices and prediction data to database. """
 
     def __init__(self):
         self.client = MongoClient('mongodb://mongo:27017/')
@@ -15,6 +15,8 @@ class MongoHelper(object):
         self.forecast_collection = self.db['stock_forecast']
 
     def get_historical_data(self, start_date):
+        """ Returns historical stock data for all stock symbols from the particular data"""
+
         historical_data = {}
         for stock_data in self.history_collection.find({"date": {"$gt": start_date}}, {"date": 1, "adjClose": 1, "symbol": 1, "_id": 0}).sort('date', pymongo.ASCENDING):
             if stock_data['symbol'] not in historical_data:
@@ -24,6 +26,8 @@ class MongoHelper(object):
         return historical_data
 
     def save_forecast_data(self, predicted_data, prediction_dates, numdays):
+        """ Saves forecasted data to database"""
+
         requests = []
         for symbol in predicted_data:
             symbol_data_prediction = predicted_data[symbol]

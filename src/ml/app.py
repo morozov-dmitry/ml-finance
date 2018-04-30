@@ -10,11 +10,13 @@ app = Flask(__name__)
 
 @app.cli.command()
 def hello():
-    """Initialize the database."""
+    """ Shows test message. """
+
     click.echo('Hello CLI')
 
 @app.cli.command()
 def predict():
+    """ Predicts data for next week. """
 
     # Define time frame for historical data to train the model
     today = datetime.today()
@@ -28,6 +30,7 @@ def predict():
 
 @app.cli.command()
 def predict_historical():
+    """ Predicts historical data. """
 
     # Define time frame for historical data to train the model
     today = datetime.today()
