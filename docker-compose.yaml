@@ -16,6 +16,8 @@ services:
         - "3001:3001"
       links:
         - mongo
+      depends_on:
+        - mongo
 
     python:
       build: build/machine-learning
@@ -33,6 +35,8 @@ services:
         - .:/application
       links:
         - mongo
+      depends_on:
+        - mongo
 
     webserver:
       image: nginx:alpine
@@ -43,4 +47,6 @@ services:
           - ./build/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
       ports:
        - "80:80"
+      depends_on:
+       - nodejs
 

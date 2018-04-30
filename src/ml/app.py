@@ -26,7 +26,6 @@ def predict():
     # print results
     click.echo('Machine learning algorithms has been run. Predicted data saved to database')
 
-
 @app.cli.command()
 def predict_historical():
 
