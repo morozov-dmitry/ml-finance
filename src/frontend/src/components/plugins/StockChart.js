@@ -7,17 +7,8 @@ class StockChart extends Component {
 
     render() {
         const { series, title, showNavigator } = this.props;
-        console.log('showNavigator', showNavigator)
-        /*
-        const { historySeriesId, forecastedSeriesId} = ['historyData' + symbol, 'forecastedData' + symbol]
-        <Navigator>
-            <Navigator.Series seriesId="historyData" />
-            <Navigator.Series seriesId="forecastedData" />
-        </Navigator>
-        */
-
         return (
-            <section>
+            <section style={{'margin':'10px'}}>
                 <HighchartsStockChart>
 
                     <Chart zoomType="x" />

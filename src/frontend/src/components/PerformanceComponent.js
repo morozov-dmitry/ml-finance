@@ -47,7 +47,7 @@ class PerformanceComponent extends Component {
 
         return (
             <section>
-                {stocksLoaded && forecastLoaded && (<StockChart series={series} title={title} showNavigator={'true'}/>)}
+                {stocksLoaded && forecastLoaded && (<StockChart series={series} title={title} showNavigator={'false'}/>)}
             </section>
         );
     }

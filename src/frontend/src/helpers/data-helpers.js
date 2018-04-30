@@ -19,7 +19,7 @@ export const parseTimeSeriesData = (data, field) => {
     data.map((singleDataPoint) => {
         result.push([
             Date.parse(singleDataPoint.date),
-            singleDataPoint[field]
+            Math.round(parseFloat(singleDataPoint[field]) * 1000) / 1000
         ]);
     })
     return result

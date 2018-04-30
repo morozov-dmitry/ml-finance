@@ -11,8 +11,6 @@ import Navigation from './components/plugins/Navigation'
 import Footer from './components/plugins/Footer'
 import HomeComponent from './components/HomeComponent'
 import PerformanceComponent from './components/PerformanceComponent'
-import FAQComponent from './components/FAQComponent'
-import ContactComponent from './components/ContactComponent'
 
 class App extends Component {
     componentDidMount() {
@@ -45,8 +43,6 @@ class App extends Component {
                 <Navigation />
                 <Route path='/' exact component={HomeComponent} />
                 <Route path='/performance' exact component={PerformanceComponent} />
-                <Route path='/faq' exact component={FAQComponent}/>
-                <Route path='/contact' exact component={ContactComponent}/>
                 <Footer />
             </div>
         );

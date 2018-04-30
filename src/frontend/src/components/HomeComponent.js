@@ -23,7 +23,6 @@ class HomeComponent extends Component {
         }
         if(forecastLoaded){
             forecasts = getSeriesWithBestPerformance(forecasts)
-            console.log('forecasts optimal', forecasts);
             forecastedData = parseTimeSeriesData(forecasts, 'forecast')
         }
 

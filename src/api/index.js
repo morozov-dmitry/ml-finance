@@ -58,6 +58,9 @@ mongoClient.connect(dsn, (err, mongoClient) => {
         }
     })
 
+    /**
+     * Returns forecasted price data for whole historic period
+     */
     app.get('/history-performance/:symbol', (req, res) => {
         if(symbolValidation(req, res)){
             const symbol = req.param('symbol')

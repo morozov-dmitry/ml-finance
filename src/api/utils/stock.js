@@ -47,10 +47,12 @@ const getAllForecastedData = (db, symbol) => {
 }
 
 const remapStockData = (groupedBySymbolStocks) => {
+    console.log('groupedBySymbolStocks', groupedBySymbolStocks);
     let stocks = []
     for(let symbol in groupedBySymbolStocks) {
         const symbolData = groupedBySymbolStocks[symbol]
         symbolData.map((singleSymbolData) => {
+            singleSymbolData['date'].setHours(0,0,0,0)
             if(typeof(singleSymbolData['adjClose']) != 'undefined'){
                 stocks.push(singleSymbolData)
             }
