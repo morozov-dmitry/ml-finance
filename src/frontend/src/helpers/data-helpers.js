@@ -11,15 +11,49 @@ export const createRandomData = (time, magnitude, points = 100) => {
     for (i; i <= 0; i++) {
         data.push(createDataPoint(time, magnitude, i));
     }
-    console.log('data', data);
     return data;
 };
 
-/*
-export const addDataPoint = (data, toAdd) => {
-    if (!toAdd) toAdd = createDataPoint();
-    const newData = data.slice(0); // Clone
-    newData.push(toAdd);
-    return newData;
-};
-*/
+export const parseTimeSeriesData = (data, field) => {
+    let result = []
+    data.map((singleDataPoint) => {
+        result.push([
+            Date.parse(singleDataPoint.date),
+            singleDataPoint[field]
+        ]);
+    })
+    return result
+}
+
+export const groupTimeSeriesByField = (data, field) => {
+    let result = {}
+    data.map((singleDataPoint) => {
+        if(typeof(result[singleDataPoint[field]]) === 'undefined'){
+            result[singleDataPoint[field]] = []
+        }
+        result[singleDataPoint[field]].push(singleDataPoint);
+    })
+    return result
+}
+
+export const getSeriesWithBestPerformance = (data) => {
+    let result = {}
+    data.map((singleDataPoint) => {
+        if(typeof(result[singleDataPoint['date']]) === 'undefined'){
+            result[singleDataPoint['date']] = {
+                date: singleDataPoint['date'],
+                score: 0,
+                forecast: 0
+            }
+        }
+        if(singleDataPoint['score'] > result[singleDataPoint['date']]['score']){
+            result[singleDataPoint['date']] = {
+                date: singleDataPoint['date'],
+                score: singleDataPoint['score'],
+                forecast: singleDataPoint['forecast']
+            }
+        }
+    })
+    return Object.values(result)
+}
+

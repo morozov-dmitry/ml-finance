@@ -8,7 +8,6 @@ const stockModel = require('./utils/stock')
 
 
 const dsn = "mongodb://mongo:27017/udacity-finance";
-
 const DATABASE_NAME = "udacity-finance"
 
 // Stock prices symbols to download
@@ -26,8 +25,7 @@ program
             const db = mongoClient.db(DATABASE_NAME)
             stockModel.loadStockData(symbol)
                 .then((result) => { return stockModel.remapStockData(result) })
-                .then((stocks) => { return stockModel.saveStockDataToDatabase(db, stocks) })
-                .then(() => { console.log('Stock prices were downloaded');  process.exit(0) })
+                .then((stocks) => { return stockModel.saveStockDataToDatabaseFromCLI(db, stocks) })
                 .catch((e) => { console.error(e); process.exit(1) })
         })
     })
@@ -41,8 +39,7 @@ program
             const db = mongoClient.db(DATABASE_NAME)
             stockModel.loadStockHistoryData(symbol)
                 .then((result) => { return stockModel.remapStockData(result) })
-                .then((stocks) => { return stockModel.saveStockDataToDatabase(db, stocks) })
-                .then(() => { console.log('Stock prices were downloaded');  process.exit(0) })
+                .then((stocks) => { return stockModel.saveStockDataToDatabaseFromCLI(db, stocks) })
                 .catch((e) => { console.error(e); process.exit(1) })
         });
     });

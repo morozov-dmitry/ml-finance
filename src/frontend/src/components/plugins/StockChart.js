@@ -1,29 +1,28 @@
 import React, { Component } from 'react';
 import {createRandomData} from "../../helpers/data-helpers";
 import Highcharts from 'highcharts/highstock'
-import {HighchartsStockChart, Tooltip, Chart, withHighcharts, XAxis, YAxis, AreaSplineSeries, Title, Series, FlagSeries, Navigator, PlotBand} from 'react-jsx-highstock'
+import {HighchartsStockChart, Tooltip, Chart, withHighcharts, XAxis, YAxis, AreaSplineSeries, Title, Series, FlagSeries, Navigator, PlotBand, Legend} from 'react-jsx-highstock'
 
 class StockChart extends Component {
 
-    constructor (props) {
-        super(props)
-        const historyData = props.historyData
-        const forecastedData = props.forecastedData
-        this.state = {
-            historyData,
-            forecastedData
-        }
-    }
-
     render() {
-        const { historyData, forecastedData } = this.state;
+        const { series, title, showNavigator } = this.props;
+        console.log('showNavigator', showNavigator)
+        /*
+        const { historySeriesId, forecastedSeriesId} = ['historyData' + symbol, 'forecastedData' + symbol]
+        <Navigator>
+            <Navigator.Series seriesId="historyData" />
+            <Navigator.Series seriesId="forecastedData" />
+        </Navigator>
+        */
+
         return (
             <section>
                 <HighchartsStockChart>
 
                     <Chart zoomType="x" />
 
-                    <Title>Stock prices</Title>
+                    <Title>{ title }</Title>
 
                     <Tooltip />
 
@@ -33,14 +32,20 @@ class StockChart extends Component {
 
                     <YAxis id="sales">
                         <YAxis.Title>Stock price</YAxis.Title>
-                        <Series id="historyData" name="Price" data={historyData} />
-                        <Series id="forecastedData" name="Forecasted price" data={forecastedData} />
+                        {series.map((singleSeries, i) => (
+                            <Series key={i} id={singleSeries.id} name={singleSeries.name} data={singleSeries.data} />
+                        ))}
                     </YAxis>
 
-                    <Navigator>
-                        <Navigator.Series seriesId="historyData" />
-                        <Navigator.Series seriesId="forecastedData" />
-                    </Navigator>
+                    { showNavigator && (
+                        <Navigator>
+                            {series.map((singleSeries, i) => (
+                                <Navigator.Series key={i} seriesId={singleSeries.id} />
+                            ))}
+                        </Navigator>
+                    )}
+
+                    <Legend layout="horizontal" align="center" verticalAlign="bottom" />
 
                 </HighchartsStockChart>
             </section>

@@ -1,7 +1,8 @@
 import * as actionTypes from './actionTypes';
 
 const initialState = {
-    list: []
+    list: [],
+    all: []
 };
 
 export default (state = initialState, action) => {
@@ -10,6 +11,11 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 ['list'] : action.payload,
+            }
+        case actionTypes.FETCH_ALL_FORECASTS:
+            return {
+                ...state,
+                ['all'] : action.payload,
             }
         default:
             return state;

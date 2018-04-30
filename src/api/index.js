@@ -20,36 +20,66 @@ mongoClient.connect(dsn, (err, mongoClient) => {
 
     const db = mongoClient.db("udacity-finance")
 
-    /**
-     * Returns historical data (21 days) about stock prices
-     */
-    app.get('/history/:symbol', (req, res) => {
-        const symbol = req.param('symbol')
-        stockModel.getHistoryData(db, symbol)
-            .toArray((err, stocks) => {
-                (!err) ? res.send({"status": 0, "data": stocks}) : res.send({"status": 1, "error": err})
-            })
-    });
-
-    /**
-     * Returns forecasted data (7 days) about stock prices
-     */
-    app.get('/forecast/:symbol', (req, res) => {
+    const symbolValidation = (req, res) => {
         const symbol = req.param('symbol')
         if (typeof(symbol) === 'undefined' || !symbols.includes(symbol)) {
             res.status(400).send({
                 status: 1,
                 message: "Correct symbol must be provides (one of " + symbols.concat(', ') + ")"
             })
+            return false
         }
-        else {
+        return true
+    }
+
+    /**
+     * Returns historical data (21 days) about stock prices
+     */
+    app.get('/history/:symbol', (req, res) => {
+        if(symbolValidation(req, res)){
+            const symbol = req.param('symbol')
+            stockModel.getHistoryData(db, symbol)
+                .toArray((err, stocks) => {
+                    (!err) ? res.send({"status": 0, "data": stocks}) : res.send({"status": 1, "error": err})
+                })
+        }
+    })
+
+    /**
+     * Returns forecasted data (7 days) about stock prices
+     */
+    app.get('/forecast/:symbol', (req, res) => {
+        if(symbolValidation(req, res)){
+            const symbol = req.param('symbol')
             stockModel.getForecastedData(db, symbol)
                 .toArray((err, stocks) => {
                     (!err) ? res.send({"status": 0, "data": stocks}) : res.send({"status": 1, "error": err})
                 })
         }
-    });
+    })
 
+    app.get('/history-performance/:symbol', (req, res) => {
+        if(symbolValidation(req, res)){
+            const symbol = req.param('symbol')
+            stockModel.getAllHistoryData(db, symbol)
+                .toArray((err, stocks) => {
+                    (!err) ? res.send({"status": 0, "data": stocks}) : res.send({"status": 1, "error": err})
+                })
+        }
+    })
+
+    /**
+     * Returns forecasted data (7 days) about stock prices
+     */
+    app.get('/forecast-performance/:symbol', (req, res) => {
+        if(symbolValidation(req, res)){
+            const symbol = req.param('symbol')
+            stockModel.getAllForecastedData(db, symbol)
+                .toArray((err, stocks) => {
+                    (!err) ? res.send({"status": 0, "data": stocks}) : res.send({"status": 1, "error": err})
+                })
+        }
+    })
 
     /**
      * Loads data about strike prices for previous 3 months
@@ -65,7 +95,7 @@ mongoClient.connect(dsn, (err, mongoClient) => {
     /**
      * Loads data about strike prices for previous 3 months
      */
-    app.get('/full-load', (req, resp) => {
+    app.get('/full-load', (req, res) => {
         stockModel.loadStockHistoryData(symbol)
             .then((result) => { return stockModel.remapStockData(result) })
             .then((stocks) => { return stockModel.saveStockDataToDatabase(db, stocks) })
