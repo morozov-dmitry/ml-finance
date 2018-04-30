@@ -27,7 +27,7 @@ export default class Footer extends Component {
                                 </ul>
                             </div>
                             <div className="col-sm-3 col-md-3 col-lg-3">
-                                <h3>Nano</h3>
+                                <h3>UDACITY</h3>
                                 <ul>
                                     <li><a href="https://www.udacity.com/contact">Contact Us</a></li>
                                     <li><a href="https://udacity.zendesk.com/hc/en-us">Help and FAQ</a></li>
