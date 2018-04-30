@@ -8,14 +8,14 @@ from utils.prediction_helper import PredictionHelper
 
 app = Flask(__name__)
 
-@app.route('/')
+cc
 # @app.cli.command()
 def hello():
     """Initialize the database."""
     click.echo('Hello CLI')
 
-@app.route('/predict')
-#@app.cli.command()
+c
+@app.cli.command()
 def predict():
 
     # Define time frame for historical data to train the model
@@ -26,27 +26,27 @@ def predict():
     prediction_helper.make_prediction(start_date)
 
     # print results
-    #click.echo('Machine learning algorithms has been run. Predicted data saved to database')
+    click.echo('Machine learning algorithms has been run. Predicted data saved to database')
 
-    return prepare_response()
+    #return prepare_response()c
 
 
-@app.route('/predict-historical')
-#@app.cli.command()
+c
+@app.cli.command()
 def predict_historical():
 
     # Define time frame for historical data to train the model
     today = datetime.today()
-    start_date = today - relativedelta(months=3)
+    start_date = today - relativedelta(years=3)
 
     prediction_helper = PredictionHelper()
     prediction_helper.make_prediciton_for_historical_data(start_date)
 
     # print results
-    #click.echo('Machine learning algorithms has been run. Predicted data saved to database')
+    click.echo('Machine learning algorithms has been run. Predicted data saved to database')
 
     # Response
-    return prepare_response()
+    # return prepare_response()
 
 
 def prepare_response():

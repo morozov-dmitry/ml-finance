@@ -6,10 +6,6 @@ const HISTORY_COLLECTION = 'stock_log';
 const FORECAST_COLLECTION = 'stock_forecast';
 const DATE_FORMAT = 'yyyy-mm-dd'
 
-
-const PREDICTION_MODEL = 'RandomForestRegressor'
-
-
 const getHistoryData = (db, symbol) => {
     const [dateFrom, dateTo] = dateTimeHelper.getHistoryDataWindow()
     return db.collection(HISTORY_COLLECTION).find({'$and': [
@@ -24,7 +20,6 @@ const getHistoryData = (db, symbol) => {
 const getForecastedData = (db, symbol) => {
     const [dateFrom, dateTo] = dateTimeHelper.getForecastWindow()
     return db.collection(FORECAST_COLLECTION).find({'$and': [
-                // {"model":PREDICTION_MODEL},
                 {"symbol":symbol},
                 {"date":{"$gte":dateFrom}},
                 {"date":{"$lte":dateTo}}

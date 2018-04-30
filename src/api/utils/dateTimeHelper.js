@@ -20,7 +20,7 @@ const getFullDataLoadWindow = () => {
     const currentDate = new Date;
     const dateTo = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000);
     // Previous 3 years
-    const dateFrom = new Date(dateTo.getTime() - 3/* * 12*/ * 31 * 24 * 60 * 60 * 1000);
+    const dateFrom = new Date(dateTo.getTime() - 3 * 12 * 31 * 24 * 60 * 60 * 1000);
     return [dateFrom, dateTo]
 }
 
