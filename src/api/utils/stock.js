@@ -6,6 +6,13 @@ const HISTORY_COLLECTION = 'stock_log';
 const FORECAST_COLLECTION = 'stock_forecast';
 const DATE_FORMAT = 'yyyy-mm-dd'
 
+
+/**
+ * Returns historical stock data
+ * @param db MongoDB database connection
+ * @param symbol stock price symbol which data is going to be shown.
+ * @returns {Cursor} MongoDB cursor
+ */
 const getHistoryData = (db, symbol) => {
     const [dateFrom, dateTo] = dateTimeHelper.getHistoryDataWindow()
     return db.collection(HISTORY_COLLECTION).find({'$and': [
@@ -17,6 +24,12 @@ const getHistoryData = (db, symbol) => {
         .sort({date: 1})
 }
 
+/**
+ * Returns historical stock data
+ * @param db MongoDB database connection
+ * @param symbol stock price symbol which data is going to be shown.
+ * @returns {Cursor} MongoDB cursor
+ */
 const getForecastedData = (db, symbol) => {
     const [dateFrom, dateTo] = dateTimeHelper.getForecastWindow()
     return db.collection(FORECAST_COLLECTION).find({'$and': [
@@ -28,6 +41,12 @@ const getForecastedData = (db, symbol) => {
         .sort({date: 1})
 }
 
+/**
+ * Returns historical stock data
+ * @param db MongoDB database connection
+ * @param symbol stock price symbol which data is going to be shown.
+ * @returns {Cursor} MongoDB cursor
+ */
 const getAllHistoryData = (db, symbol) => {
     const [dateFrom, dateTo] = dateTimeHelper.getHistoryDataWindow()
     return db.collection(HISTORY_COLLECTION).find({'$and': [
@@ -37,6 +56,12 @@ const getAllHistoryData = (db, symbol) => {
         .sort({date: 1})
 }
 
+/**
+ * Returns historical stock data
+ * @param db MongoDB database connection
+ * @param symbol stock price symbol which data is going to be shown.
+ * @returns {Cursor} MongoDB cursor
+ */
 const getAllForecastedData = (db, symbol) => {
     const [dateFrom, dateTo] = dateTimeHelper.getForecastWindow()
     return db.collection(FORECAST_COLLECTION).find({'$and': [
@@ -46,8 +71,12 @@ const getAllForecastedData = (db, symbol) => {
         .sort({date: 1})
 }
 
+/**
+ * Maps Yahoo Finance result data to array of stocks data.
+ * @param groupedBySymbolStocks
+ * @returns {Array}
+ */
 const remapStockData = (groupedBySymbolStocks) => {
-    console.log('groupedBySymbolStocks', groupedBySymbolStocks);
     let stocks = []
     for(let symbol in groupedBySymbolStocks) {
         const symbolData = groupedBySymbolStocks[symbol]
@@ -61,6 +90,11 @@ const remapStockData = (groupedBySymbolStocks) => {
     return stocks;
 }
 
+/**
+ * Loads stock data for previous day from Yahoo Finance service.
+ * @param symbol stock prices symbol
+ * @returns {*}
+ */
 const loadStockData = (symbol) => {
     const symbols = symbol.list
     const [dateFrom, dateTo] = dateTimeHelper.getLoadDataWindow()
@@ -71,6 +105,11 @@ const loadStockData = (symbol) => {
     })
 }
 
+/**
+ * Loads stock data for 3 years from Yahoo Finance service.
+ * @param symbol stock prices symbol
+ * @returns {*}
+ */
 const loadStockHistoryData = (symbol) => {
     const symbols = symbol.list
     const [dateFrom, dateTo] = dateTimeHelper.getFullDataLoadWindow()
@@ -81,12 +120,22 @@ const loadStockHistoryData = (symbol) => {
     })
 }
 
+/**
+ * Saves stock data to database.
+ * @param db MongoDB database connection
+ * @param stocks array of stock prices data
+ */
 const saveStockDataToDatabase = (db, stocks) => {
     db.collection(HISTORY_COLLECTION).insertMany(stocks, (queryerr, result) => {
         if (queryerr) throw queryerr;
     })
 }
 
+/**
+ * Saves stock data to database. For CLI renders result.
+ * @param db MongoDB database connection
+ * @param stocks array of stock prices data
+ */
 const saveStockDataToDatabaseFromCLI = (db, stocks) => {
     db.collection(HISTORY_COLLECTION).insertMany(stocks, (queryerr, result) => {
         if (queryerr) throw queryerr;

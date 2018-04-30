@@ -1,3 +1,7 @@
+/**
+ * Returns dates for week ahead forecast
+ * @returns {[*,*]}
+ */
 const getForecastWindow = () => {
     const currentDate = new Date
     // Previous day
@@ -7,6 +11,10 @@ const getForecastWindow = () => {
     return [dateFrom, dateTo]
 }
 
+/**
+ * Returns dates for loading historical data for previous day
+ * @returns {[*,*]}
+ */
 const getLoadDataWindow = () => {
     // Current day
     const dateTo = new Date
@@ -15,6 +23,10 @@ const getLoadDataWindow = () => {
     return [dateFrom, dateTo]
 }
 
+/**
+ * Returns dates for loading historical data for previous 3 years
+ * @returns {[*,*]}
+ */
 const getFullDataLoadWindow = () => {
     // Current day
     const currentDate = new Date;
@@ -24,6 +36,10 @@ const getFullDataLoadWindow = () => {
     return [dateFrom, dateTo]
 }
 
+/**
+ * Returns dates for showing historical data for previous 21 days
+ * @returns {[*,*]}
+ */
 const getHistoryDataWindow = () => {
     // Current day
     const dateTo = new Date;

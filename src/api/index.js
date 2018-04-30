@@ -20,6 +20,12 @@ mongoClient.connect(dsn, (err, mongoClient) => {
 
     const db = mongoClient.db("udacity-finance")
 
+    /**
+     * Base method for stock symbol validation
+     * @param req request
+     * @param res response
+     * @returns {boolean}
+     */
     const symbolValidation = (req, res) => {
         const symbol = req.param('symbol')
         if (typeof(symbol) === 'undefined' || !symbols.includes(symbol)) {
@@ -59,7 +65,7 @@ mongoClient.connect(dsn, (err, mongoClient) => {
     })
 
     /**
-     * Returns forecasted price data for whole historic period
+     * Returns full historical data for the partical stock symbol
      */
     app.get('/history-performance/:symbol', (req, res) => {
         if(symbolValidation(req, res)){
@@ -72,7 +78,7 @@ mongoClient.connect(dsn, (err, mongoClient) => {
     })
 
     /**
-     * Returns forecasted data (7 days) about stock prices
+     * Returns full forecasted data for the partical stock symbol
      */
     app.get('/forecast-performance/:symbol', (req, res) => {
         if(symbolValidation(req, res)){
@@ -85,7 +91,7 @@ mongoClient.connect(dsn, (err, mongoClient) => {
     })
 
     /**
-     * Loads data about strike prices for previous 3 months
+     * Loads data about strike prices for previous day
      */
     app.get('/load', (req, res) => {
         stockModel.loadStockData(symbol)
@@ -96,7 +102,7 @@ mongoClient.connect(dsn, (err, mongoClient) => {
     })
 
     /**
-     * Loads data about strike prices for previous 3 months
+     * Loads data about strike prices for previous 3 years
      */
     app.get('/full-load', (req, res) => {
         stockModel.loadStockHistoryData(symbol)

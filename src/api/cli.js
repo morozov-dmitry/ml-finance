@@ -13,10 +13,16 @@ const DATABASE_NAME = "udacity-finance"
 // Stock prices symbols to download
 const symbols = symbol.list
 
+/**
+ * Provides base cli information.
+ */
 program
     .version('0.0.1')
     .description('Stock prices load command interface');
 
+/**
+ * Downloads stock data for previous day.
+ */
 program
     .command('load')
     .description('Loads stock prices for previous day')
@@ -30,6 +36,9 @@ program
         })
     })
 
+/**
+ * Downloads stock data for 3 years.
+ */
 program
     .command('full-load')
     .alias('full')
