@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import {createRandomData} from "../../helpers/data-helpers";
 import Highcharts from 'highcharts/highstock'
 import {HighchartsStockChart, Tooltip, Chart, withHighcharts, XAxis, YAxis, AreaSplineSeries, Title, Series, FlagSeries, Navigator, PlotBand, Legend} from 'react-jsx-highstock'
 

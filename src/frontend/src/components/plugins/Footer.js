@@ -11,49 +11,49 @@ export default class Footer extends Component {
                             <div className="col-sm-3 col-md-3 col-lg-3">
                                 <h3>INFORMATION</h3>
                                 <ul>
-                                    <li><a href="">Payment Option</a></li>
-                                    <li><a href="">Free Schedule</a></li>
-                                    <li><a href="">Getting Started</a></li>
-                                    <li><a href="">Bitcoin Calculator</a></li>
-                                </ul>
-                            </div>
-                            <div className="col-sm-3 col-md-3 col-lg-3">
-                                <h3>Our Services</h3>
-                                <ul>
-                                    <li><a href="">Graphic Design</a></li>
-                                    <li><a href="">Web Design</a></li>
-                                    <li><a href="">Web Development</a></li>
+                                    <li><a href="https://www.udacity.com/course/machine-learning-engineer-nanodegree--nd009t">Machine Learning Engineer</a></li>
+                                    <li><a href="https://www.udacity.com/course/deep-learning-nanodegree--nd101">Deep Learning</a></li>
+                                    <li><a href="https://www.udacity.com/course/ai-artificial-intelligence-nanodegree--nd898">Artificial Intelligence</a></li>
+                                    <li><a href="https://www.udacity.com/course/self-driving-car-engineer-nanodegree--nd013">Self-Driving Car Engineer</a></li>
                                 </ul>
                             </div>
                             <div className="col-sm-3 col-md-3 col-lg-3">
                                 <h3>Quick Links</h3>
                                 <ul>
-                                    <li><a href="">Partners</a></li>
-                                    <li><a href="">About</a></li>
-                                    <li><a href="">FAQ’s</a></li>
-                                    <li><a href="">Badges</a></li>
+                                    <li><a href="https://www.udacity.com/us">About</a></li>
+                                    <li><a href="https://blog.udacity.com/">Blog</a></li>
+                                    <li><a href="https://www.udacity.com/jobs#business-development?location=all">Jobs</a></li>
+                                    <li><a href="https://www.udacity.com/intersect">Udacity Intersect</a></li>
+                                </ul>
+                            </div>
+                            <div className="col-sm-3 col-md-3 col-lg-3">
+                                <h3>Nano</h3>
+                                <ul>
+                                    <li><a href="https://www.udacity.com/contact">Contact Us</a></li>
+                                    <li><a href="https://udacity.zendesk.com/hc/en-us">Help and FAQ</a></li>
+                                    <li><a href="https://www.udacity.com/sitemap/guides">Course Guides</a></li>
                                 </ul>
                             </div>
                             <div className="col-sm-3 col-md-3 col-lg-3">
                                 <h3>Follow Us</h3>
                                 <ul>
                                     <li>
-                                        <a href="">
+                                        <a href="https://www.facebook.com/Udacity">
                                             Facebook
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="">
+                                        <a href="https://twitter.com/udacity">
                                             Twitter
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="">
+                                        <a href="https://www.linkedin.com/school/udacity/">
                                             Linkedin
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="">
+                                        <a href="https://plus.google.com/+Udacity">
                                             Google PLus
                                         </a>
                                     </li>
