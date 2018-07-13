@@ -48,7 +48,6 @@ const getForecastedData = (db, symbol) => {
  * @returns {Cursor} MongoDB cursor
  */
 const getAllHistoryData = (db, symbol) => {
-    const [dateFrom, dateTo] = dateTimeHelper.getHistoryDataWindow()
     return db.collection(HISTORY_COLLECTION).find({'$and': [
                 {"symbol": symbol}
             ]},
@@ -63,7 +62,6 @@ const getAllHistoryData = (db, symbol) => {
  * @returns {Cursor} MongoDB cursor
  */
 const getAllForecastedData = (db, symbol) => {
-    const [dateFrom, dateTo] = dateTimeHelper.getForecastWindow()
     return db.collection(FORECAST_COLLECTION).find({'$and': [
                 {"symbol":symbol}
             ]},
@@ -139,7 +137,7 @@ const saveStockDataToDatabase = (db, stocks) => {
 const saveStockDataToDatabaseFromCLI = (db, stocks) => {
     db.collection(HISTORY_COLLECTION).insertMany(stocks, (queryerr, result) => {
         if (queryerr) throw queryerr;
-        console.log('Stock prices were downloaded');
+        console.log('Stock prices were downloaded')
         process.exit(0)
     })
 }

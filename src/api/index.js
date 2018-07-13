@@ -12,7 +12,7 @@ const dsn = "mongodb://mongo:27017/udacity-finance";
 // Stock prices symbols to download
 const symbols = symbol.list
 
-app.get('/', function (req, res) {
+app.get('/', (req, res) => {
     res.send('Welcome to udacity-finance API');
 })
 
